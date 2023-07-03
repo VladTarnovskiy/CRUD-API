@@ -1,16 +1,18 @@
 import * as dotenv from "dotenv";
 import http from "http";
+import { getMethods } from "./methods";
+import { parseResponse } from "./utils/parseResponse";
 
 dotenv.config();
 
 const PORT = process.env.PORT || 4001;
-const serverError = { message: "Internal Server Error" };
+const serverError = { message: "Server Error" };
 
 const server = http.createServer((req, res) => {
   try {
-    // methods[req.method || 'GET'](req, res);
+    getMethods(req.method || "GET", req, res);
   } catch {
-    // parseJson(500, serverError, req, res);s
+    parseResponse(500, serverError, res);
   }
 });
 

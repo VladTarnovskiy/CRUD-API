@@ -10,8 +10,8 @@ const baseUrl = `http://localhost:${PORT}/`;
 
 export const parseUrl = (
   //   baseUrl: string | URL,
-  req: IncomingMessage,
-  res: ServerResponse<IncomingMessage>
+  req: IncomingMessage
+  // res: ServerResponse<IncomingMessage>
 ) => {
   const parsedUrl = new URL(req.url || "", baseUrl);
   return parsedUrl;
