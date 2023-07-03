@@ -1,6 +1,7 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { getUrlParams, getUrlPathname, parseUrl } from "../utils/urlMethods";
 // import { data } from "../data";
+import { validate } from "uuid";
 import { parseResponse } from "../utils/parseResponse";
 import { parseData } from "../utils/parseData";
 import { User } from "../interfaces";
@@ -15,6 +16,7 @@ const usersEndpoints = "/api/users";
 const existUserError = { message: "User doesn't exist!" };
 const requestError = { message: "Invalid request!" };
 const dataError = { message: "Invalid input data!" };
+const idError = { message: "Invalid uuid!" };
 
 export const getRequest = (
   req: IncomingMessage,
@@ -28,7 +30,9 @@ export const getRequest = (
     parseResponse(200, data, res);
   } else if (pathname === usersEndpoints && params.id) {
     const filteredData = data.filter((user: User) => user.id === params.id);
-    if (filteredData.length > 0) {
+    if (!validate(params.id)) {
+      parseResponse(400, idError, res);
+    } else if (filteredData.length > 0) {
       parseResponse(200, filteredData, res);
     } else {
       parseResponse(404, existUserError, res);
@@ -42,10 +46,6 @@ export const postRequest = async (
   req: IncomingMessage,
   res: ServerResponse<IncomingMessage>
 ) => {
-  //   const url = parseUrl(req);
-  //   const pathname = getUrlPathname(url);
-  //   const params = getUrlParams(url);
-
   if (req.url === usersEndpoints) {
     const userData: any = await parseData(req);
     if (isDataValid(userData)) {
@@ -53,6 +53,38 @@ export const postRequest = async (
       data.push(userData);
       addDataToUsers(data);
       parseResponse(200, userData, res);
+    } else {
+      parseResponse(404, dataError, res);
+    }
+  } else {
+    parseResponse(404, requestError, res);
+  }
+};
+
+export const putRequest = async (
+  req: IncomingMessage,
+  res: ServerResponse<IncomingMessage>
+) => {
+  const url = parseUrl(req);
+  const pathname = getUrlPathname(url);
+  const params = getUrlParams(url);
+  if (pathname === usersEndpoints && params.id) {
+    const filteredData = data.filter((user: User) => user.id === params.id);
+    const requestData: any = await parseData(req);
+    if (isDataValid(requestData)) {
+      if (filteredData.length > 0) {
+        const updatedUsers = data.map((user) => {
+          if (user.id === params.id) {
+            user = { ...requestData, id: params.id };
+          }
+          return user;
+        });
+        data = updatedUsers;
+        addDataToUsers(data);
+        parseResponse(200, data, res);
+      } else {
+        parseResponse(404, existUserError, res);
+      }
     } else {
       parseResponse(404, dataError, res);
     }
