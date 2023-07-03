@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from "http";
-import { getRequest, putRequest } from "./methods";
+import { deleteRequest, getRequest, putRequest } from "./methods";
 import { postRequest } from "./methods";
 
 export const getMethods = (
@@ -18,6 +18,7 @@ export const getMethods = (
       putRequest(req, res);
       break;
     case "DELETE":
+      deleteRequest(req, res);
       break;
     default:
       break;

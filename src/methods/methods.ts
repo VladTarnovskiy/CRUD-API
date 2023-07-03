@@ -1,6 +1,5 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { getUrlParams, getUrlPathname, parseUrl } from "../utils/urlMethods";
-// import { data } from "../data";
 import { validate } from "uuid";
 import { parseResponse } from "../utils/parseResponse";
 import { parseData } from "../utils/parseData";
@@ -26,7 +25,6 @@ export const getRequest = (
   const pathname = getUrlPathname(url);
   const params = getUrlParams(url);
   if (req.url === usersEndpoints) {
-    console.log(data);
     parseResponse(200, data, res);
   } else if (pathname === usersEndpoints && params.id) {
     const filteredData = data.filter((user: User) => user.id === params.id);
@@ -87,6 +85,31 @@ export const putRequest = async (
       }
     } else {
       parseResponse(404, dataError, res);
+    }
+  } else {
+    parseResponse(404, requestError, res);
+  }
+};
+
+export const deleteRequest = async (
+  req: IncomingMessage,
+  res: ServerResponse<IncomingMessage>
+) => {
+  const url = parseUrl(req);
+  const pathname = getUrlPathname(url);
+  const params = getUrlParams(url);
+  if (pathname === usersEndpoints && params.id) {
+    const filteredData = data.filter((user: User) => user.id !== params.id);
+    if (validate(params.id)) {
+      if (filteredData.length !== data.length) {
+        data = filteredData;
+        addDataToUsers(data);
+        parseResponse(204, data, res);
+      } else {
+        parseResponse(404, existUserError, res);
+      }
+    } else {
+      parseResponse(400, idError, res);
     }
   } else {
     parseResponse(404, requestError, res);
